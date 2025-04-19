@@ -1,1 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Free online salary calculator for Sri Lanka (April 2025). Calculates Net Salary, PAYE Tax, and EPF contributions.">
+  <meta name="keywords" content="Sri Lanka salary calculator 2025, PAYE tax, EPF calculation, net salary Sri Lanka">
+  <meta name="author" content="Iresh Madhushan Ekanayaka">
 
+  <meta property="og:title" content="Online Salary Calculator - Sri Lanka (April 2025)">
+  <meta property="og:description" content="Free salary calculator to estimate net salary with EPF and PAYE tax based on 2025 rules.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://emiresh.github.io/sri-lanka-salary-calculator/">
+  <meta property="og:image" content="https://emiresh.github.io/sri-lanka-salary-calculator/preview.png">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Online Salary Calculator - Sri Lanka (2025)">
+  <meta name="twitter:description" content="Instant salary breakdown with EPF and tax for 2025 April rules.">
+  <meta name="twitter:image" content="https://emiresh.github.io/sri-lanka-salary-calculator/preview.png">
+
+  <title>Online Salary Calculator - Sri Lanka (April 2025)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      max-width: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 1rem;
+      font-family: 'Poppins', sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: #bbbbbb;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: #1f1f1f;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 4px;
+      background-color: #2a2a2a;
+      color: #fff;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .checkbox-group {
+      margin-top: 1rem;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: normal;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      padding: 12px;
+      width: 100%;
+      background-color: #03dac6;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #00bfa5;
+    }
+
+    .result {
+      margin-top: 2rem;
+      background-color: #262626;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+
+    .result em {
+      color: #ff9800;
+      font-style: normal;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      p {
+        font-size: 0.85rem;
+      }
+
+      label {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Online Salary Calculator - Sri Lanka</h1>
+  <p>(According to new tax regulations, April 2025)</p>
+
+  <div class="container">
+    <label for="totalSalary">Total Monthly Salary (Gross)</label>
+    <input type="number" id="totalSalary" placeholder="e.g. 250000" />
+
+    <label for="basicSalary">Basic Monthly Salary</label>
+    <input type="number" id="basicSalary" placeholder="Leave blank if unknown" />
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="includeEPF" checked /> Calculate EPF (8% of Basic)</label>
+      <label><input type="checkbox" id="includeTax" checked /> Calculate Tax (P.A.Y.E.)</label>
+    </div>
+
+    <button onclick="calculate()">Calculate</button>
+    <button id="downloadBtn" style="display: none;" onclick="downloadReport()">Download Report</button>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const formatter = new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+      minimumFractionDigits: 2,
+    });
+
+    let calculatedData = {};
+
+    function calculate() {
+      const totalSalary = parseFloat(document.getElementById("totalSalary").value);
+      let basicSalary = parseFloat(document.getElementById("basicSalary").value);
+      const includeEPF = document.getElementById("includeEPF").checked;
+      const includeTax = document.getElementById("includeTax").checked;
+
+      if (isNaN(totalSalary) || totalSalary <= 0) {
+        alert("Please enter a valid Total Salary.");
+        return;
+      }
+
+      let tax = 0;
+      let epf = 0;
+      let epfMessage = "";
+
+      if (includeEPF) {
+        if (isNaN(basicSalary) || basicSalary <= 0) {
+          basicSalary = totalSalary;
+          epfMessage = "(Assumed Basic Salary = Total Salary for EPF calculation)";
+        }
+        epf = basicSalary * 0.08;
+      }
+
+      if (includeTax) {
+        const annualSalary = totalSalary * 12;
+        let remaining = annualSalary - 1800000;
+
+        if (remaining > 0) {
+          const slabs = [
+            { limit: 1000000, rate: 0.06 },
+            { limit: 500000, rate: 0.18 },
+            { limit: 500000, rate: 0.24 },
+            { limit: 500000, rate: 0.30 },
+            { limit: Infinity, rate: 0.36 }
+          ];
+
+          for (let slab of slabs) {
+            let taxable = Math.min(remaining, slab.limit);
+            tax += taxable * slab.rate;
+            remaining -= taxable;
+            if (remaining <= 0) break;
+          }
+        }
+
+        tax = tax / 12;
+      }
+
+      const netSalary = totalSalary - tax - epf;
+
+      calculatedData = {
+        totalSalary,
+        basicSalary,
+        epf,
+        tax,
+        netSalary,
+        epfMessage
+      };
+
+      document.getElementById("result").innerHTML = `
+        <strong>Results:</strong><br/>
+        ${includeTax ? `Tax (P.A.Y.E.): ${formatter.format(tax)}<br/>` : ""}
+        ${includeEPF ? `${epfMessage ? `<em>${epfMessage}</em><br/>` : ''}EPF (8% of Basic): ${formatter.format(epf)}<br/>` : ""}
+        <strong>Net Salary: ${formatter.format(netSalary)}</strong>
+      `;
+
+      document.getElementById("downloadBtn").style.display = "block";
+    }
+
+    function downloadReport() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+      const margin = 15;
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+
+      doc.setFontSize(18);
+      doc.setTextColor(0, 123, 255);
+      doc.text("Salary Report - Sri Lanka (April 2025)", pageWidth / 2, margin, { align: 'center' });
+
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Total Salary (Gross):", margin, 40);
+      doc.text(formatter.format(calculatedData.totalSalary), margin + 100, 40);
+      doc.text("Basic Salary:", margin, 50);
+      doc.text(formatter.format(calculatedData.basicSalary), margin + 100, 50);
+      doc.text("EPF (8% of Basic):", margin, 60);
+      doc.text(formatter.format(calculatedData.epf), margin + 100, 60);
+      doc.text("Tax (P.A.Y.E.):", margin, 70);
+      doc.text(formatter.format(calculatedData.tax), margin + 100, 70);
+      doc.text("Net Salary:", margin, 80);
+      doc.text(formatter.format(calculatedData.netSalary), margin + 100, 80);
+
+      if (calculatedData.epfMessage) {
+        doc.text(calculatedData.epfMessage, margin, 90);
+      }
+
+      doc.setFontSize(10);
+      doc.setTextColor(128, 128, 128);
+      doc.text("Generated using the Online Salary Calculator - Sri Lanka (April 2025)", margin, pageHeight - 10);
+      doc.setDrawColor(0);
+      doc.line(margin, 25, pageWidth - margin, 25);
+
+      doc.save("salary_report.pdf");
+    }
+  </script>
+</body>
+</html>
