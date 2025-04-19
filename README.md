@@ -20,20 +20,5 @@ An easy-to-use **online salary calculator** for Sri Lanka, built to help individ
 
 ## Demo
 
-You can view the live demo of the calculator at: [YOUR_GITHUB_PAGES_URL]
+You can view the live demo of the calculator at: https://emiresh.github.io/sri-lanka-salary-calculator
 
-## Technologies Used
-
-- **HTML5**: Structure of the page.
-- **CSS3**: For responsive and modern design.
-- **JavaScript**: For functionality, calculations, and PDF report generation using the jsPDF library.
-- **GitHub Pages**: Hosting the static page online for free.
-
-## Installation
-
-If you wish to run the project locally:
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/sri-lanka-salary-calculator.git
